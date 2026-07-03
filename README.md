@@ -4,6 +4,13 @@
 
 ---
 
+### Important Disclaimer
+
+This project supports multiple AI providers, including ChatGPT, Claude, Gemini, and Groq. Depending on API availability, rate limits, quota usage, or token limits, the application may automatically switch to a different provider or model to maintain uninterrupted service and optimize performance.
+
+The selected model may vary between requests based on availability and configured fallback rules. As a result, responses can differ slightly in style, reasoning, or output quality across providers.
+---
+
 ## 🎯 Architecture Overview
 
 CareerPilot AI is built on a **multi-agent orchestrator architecture** where a master coordinator delegates workflows to specialist agents. The entire platform is powered by the **Groq API** for high-speed LLM generation, backed by a persistent SQLite database for memory.
