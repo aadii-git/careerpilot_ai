@@ -137,6 +137,7 @@ cp .env.example .env
 ```
 Inside `.env`:
 ```env
+#GEMINI_API_KEY= gemini_api_key or use other api keys
 GROQ_API_KEY=gsk_your_api_key_here
 ```
 
@@ -155,6 +156,8 @@ streamlit run app.py
 ## ⚙️ Environment Configurations
 
 Configure custom settings inside `.env`:
+you can setup with GOOGLE GEMINI MODELS OR OTHER MODELS FOR THIS PROJECT
+with the high consumption of Google api model , i switched it to ** GROQ model **
 
 | Key | Description | Default |
 |:---|:---|:---|
