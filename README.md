@@ -1,167 +1,212 @@
 # CareerPilot AI 🚀
 
-> **Your AI-powered career mentor** — Analyze skills, build roadmaps, learn interactively, practice interviews, and track your progress.
+> **Your AI-powered career mentor** — Analyze skill gaps, build personalized roadmaps, learn interactively, practice mock interviews, and track your career journey.
 
 ---
 
-## Features
+## 🎯 Architecture Overview
 
-| Feature | Description |
-|---------|-------------|
-| 🎯 Career Assessment | Upload your resume and define your goal — get a full skill-gap report |
-| 🗺️ Roadmap Generation | Month-by-month personalized learning plan that adapts to your progress |
-| 📚 Interactive Learning | AI tutor teaches through analogies, code, exercises, and projects |
-| 🧠 Adaptive Quizzes | MCQ, short-answer, and coding quizzes at Easy / Medium / Hard difficulty |
-| 🎤 Mock Interviews | Behavioral, technical, system design & coding interviews with scoring |
-| 📊 Progress Tracking | Plotly dashboards showing streaks, scores, and skill mastery |
-| 💾 Persistent Memory | All sessions stored in SQLite — the AI remembers you |
+CareerPilot AI is built on a **multi-agent orchestrator architecture** where a master coordinator delegates workflows to specialist agents. The entire platform is powered by the **Groq API** for high-speed LLM generation, backed by a persistent SQLite database for memory.
+
+```mermaid
+graph TD
+    User([User Streamlit UI]) <--> Orch[Orchestrator Agent]
+    Orch <--> Memory[Memory Agent]
+    Memory <--> DB[(SQLite Database)]
+    
+    Orch --> Career[Career Agent]
+    Orch --> Roadmap[Roadmap Agent]
+    Orch --> Learning[Learning Agent]
+    Orch --> Quiz[Quiz Agent]
+    Orch --> Interview[Interview Agent]
+
+    Career --> Parser[Resume Parser Service]
+    Career --> Groq[Groq Service]
+    Roadmap --> Groq
+    Learning --> Groq
+    Quiz --> Groq
+    Interview --> Groq
+```
 
 ---
 
-## Tech Stack
+## ⚡ Workflows & Interactive Flows
 
-- **AI**: Groq API (`meta-llama/llama-4-scout-17b-16e-instruct`)
-- **UI**: Streamlit
-- **Database**: SQLite
-- **Data**: Pandas, Plotly
-- **Models**: Pydantic v2
-- **PDF**: PyMuPDF (fitz)
-- **Config**: python-dotenv
+### 1. Career Assessment & Skill Gap Detection
+This workflow extracts text from your PDF resume, compares your experience against your target role, and automatically creates a roadmap.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant UI as Streamlit UI
+    participant Orch as Orchestrator Agent
+    participant Parser as Resume Parser
+    participant Career as Career Agent
+    participant Groq as Groq Service
+    participant DB as SQLite DB
+
+    User->>UI: Upload PDF Resume & Select Goal
+    UI->>Orch: run_career_analysis()
+    Orch->>Parser: parse_pdf_bytes()
+    Parser->>Parser: Extract text (PyMuPDF)
+    Parser->>Groq: generate_json(resume_text)
+    Groq-->>Parser: Extracted Resume JSON
+    Parser-->>Orch: ResumeAnalysis Object
+    Orch->>Career: analyze_career(ResumeAnalysis)
+    Career->>Groq: Generate Skill Gap Analysis
+    Groq-->>Career: SkillGapReport JSON
+    Career-->>Orch: SkillGapReport Object
+    Orch->>DB: Save Career Goal & Profile
+    Orch-->>UI: Render Gauge & Gap Report
+```
+
+### 2. Interactive Lesson & Quiz Evaluation
+This flow delivers an 8-stage interactive lesson (Overview to Resources) and tests your learning with adaptive quizzes.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant UI as Streamlit UI
+    participant Orch as Orchestrator Agent
+    participant Learning as Learning Agent
+    participant Quiz as Quiz Agent
+    participant Groq as Groq Service
+
+    User->>UI: Choose Roadmap Topic
+    UI->>Orch: Start lesson stage
+    Orch->>Learning: generate_lesson_stage()
+    Learning->>Groq: Generate content based on stage instructions
+    Groq-->>Learning: Markdown Lesson
+    Learning-->>UI: Render Lesson
+    
+    User->>UI: Click "Take Quiz"
+    UI->>Orch: generate_question()
+    Orch->>Quiz: generate_question(topic, difficulty)
+    Quiz->>Groq: generate_json(quiz_prompt)
+    Groq-->>Quiz: QuizQuestion JSON
+    Quiz-->>UI: Display Quiz Question
+    
+    User->>UI: Submit Answer
+    UI->>Orch: evaluate_answer(answer)
+    Orch->>Quiz: evaluate_answer()
+    Quiz->>Groq: Evaluate answer
+    Groq-->>Quiz: QuizEvaluation JSON
+    Quiz-->>UI: Render Score & Feedback
+```
 
 ---
 
-## Quick Start
+## 🛠️ Detailed Features
 
-### 1. Clone / Download
+| Module | Features & Capabilities |
+|:---|:---|
+| **🎯 Career Assessment** | Contextual skill extraction, educational & experience analysis, readiness percentage gauge, and project recommendations. |
+| **🗺️ Roadmap Generation** | Generates adaptive, month-by-month timelines. Adapts in real-time as you complete lessons and quizzes. |
+| **📚 Interactive Learning** | Learns via real-world analogies, code snippets, practical tasks, mini-projects, and reflection. |
+| **🧠 Adaptive Quizzes** | Generates MCQs, short-answer, and coding questions. Evaluates semantic correctness and guides improvement. |
+| **🎤 Mock Interviews** | Conducts mock technical, behavioral, system design, resume-based, or coding interviews. Provides multi-dimension scorecards. |
+| **📊 Progress Tracking** | Live visualization of streaks, quiz scores, roadmap progress, and skill mastery using Plotly. |
 
+---
+
+## 🚀 Tech Stack
+
+- **LLM Engine**: Groq API Client (default: `meta-llama/llama-4-scout-17b-16e-instruct`)
+- **Frontend & UI**: Streamlit
+- **Database**: SQLite (SQLAlchemy / direct database connector)
+- **PDF Extraction**: PyMuPDF (`fitz`)
+- **Validation**: Pydantic v2 (safeguarded against LLM missing or null responses)
+- **Visuals & Charts**: Plotly, Pandas
+
+---
+
+## 📦 Setup & Installation
+
+### 1. Clone & Configure
 ```bash
-git clone <repo-url>
+git clone <your-repository-url>
 cd careerpilot_ai
 ```
 
-### 2. Install Dependencies
+### 2. Configure Environment Variables
+Copy `.env.example` to `.env` and fill in your Groq API Key:
+```bash
+cp .env.example .env
+```
+Inside `.env`:
+```env
+GROQ_API_KEY=gsk_your_api_key_here
+```
 
+### 3. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configure API Key
-
-```bash
-cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
-```
-
-Get a free Gemini API key at [Google AI Studio](https://aistudio.google.com/app/apikey).
-
-### 4. Run the App
-
+### 4. Launch CareerPilot AI
 ```bash
 streamlit run app.py
 ```
 
-The app opens at `http://localhost:8501`.
+---
+
+## ⚙️ Environment Configurations
+
+Configure custom settings inside `.env`:
+
+| Key | Description | Default |
+|:---|:---|:---|
+| `GROQ_API_KEY` | Your Groq Cloud API Key (required) | — |
+| `GROQ_MODEL` | The LLM model used for chat/generation | `meta-llama/llama-4-scout-17b-16e-instruct` |
+| `GROQ_TEMPERATURE` | Generation creativity scale (0.0 to 1.0) | `0.7` |
+| `GROQ_MAX_TOKENS` | Maximum tokens to generate | `8192` |
+| `DB_PATH` | SQLite database file location | `careerpilot.db` |
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 ```
 careerpilot_ai/
-├── app.py                    # Streamlit entry point
-├── config.py                 # Global configuration
-├── requirements.txt
-├── .env.example
+├── app.py                    # Streamlit app entry-point
+├── config.py                 # Core configurations & defaults
+├── requirements.txt          # Python dependencies
+├── .env.example              # Configuration template
+├── .gitignore                # File exclusions
 │
-├── agents/
-│   ├── orchestrator.py       # Master router & context manager
-│   ├── career_agent.py       # Career analysis & gap detection
-│   ├── learning_agent.py     # Interactive AI tutor
-│   ├── interview_agent.py    # Mock interview engine
-│   ├── roadmap_agent.py      # Learning roadmap generator
-│   ├── quiz_agent.py         # Quiz generation & evaluation
-│   └── memory_agent.py       # Session persistence
+├── agents/                   # Multi-agent specialists
+│   ├── orchestrator.py       # Master orchestrator agent
+│   ├── career_agent.py       # Career analysis & skill gaps
+│   ├── interview_agent.py    # Live mock interview simulator
+│   ├── learning_agent.py     # Interactive tutor logic
+│   ├── roadmap_agent.py      # Adapting roadmap planner
+│   ├── quiz_agent.py         # Quiz builder & evaluator
+│   └── memory_agent.py       # User history & memory manager
 │
-├── database/
-│   ├── sqlite.py             # DB manager & CRUD
-│   └── models.py             # Pydantic data models
+├── database/                 # Persistence layer
+│   ├── sqlite.py             # SQLite helper and schemas
+│   └── models.py             # Pydantic schemas & records
 │
-├── services/
-│   ├── gemini_service.py     # Centralized Gemini API wrapper
-│   ├── resume_parser.py      # PDF parsing & analysis
-│   └── progress_service.py   # Streak & score calculations
+├── services/                 # External services
+│   ├── gemini_service.py     # Centralized Groq API wrapper (renamed wrapper)
+│   ├── resume_parser.py      # Resume PDF reader
+│   └── progress_service.py   # Stats tracker & streak calculator
 │
-├── utils/
-│   ├── prompts.py            # All prompt templates
-│   └── helpers.py            # Shared utilities
+├── pages/                    # Streamlit pages
+│   ├── 1_Dashboard.py        # Core student workspace
+│   ├── 2_Career_Assessment.py# Goals, resume parsing & timelines
+│   ├── 3_Learning.py         # Interactive study lessons
+│   ├── 4_Interview.py        # Mock interview terminal
+│   └── 5_Progress.py         # Student statistics charts
 │
-└── pages/
-    ├── 1_Dashboard.py
-    ├── 2_Career_Assessment.py
-    ├── 3_Learning.py
-    ├── 4_Interview.py
-    └── 5_Progress.py
+└── utils/                    # Prompts & helpers
+    ├── prompts.py            # Master prompt templates
+    └── helpers.py            # Utility methods
 ```
 
 ---
 
-## Agent Architecture
-
-```
-User Request
-     │
-     ▼
-OrchestratorAgent ──► routes to ──► CareerAgent
-                                    RoadmapAgent
-                                    LearningAgent
-                                    QuizAgent
-                                    InterviewAgent
-                                    MemoryAgent (always active)
-```
-
-The **Orchestrator** determines intent, delegates to the right agent, and combines results into a coherent response. The **Memory Agent** reads/writes context to SQLite before and after every interaction.
-
----
-
-## Usage Guide
-
-### Career Assessment
-1. Navigate to **Career Assessment**
-2. Enter your career goal (e.g., "AI Engineer")
-3. Describe your current experience
-4. Optionally upload your resume (PDF)
-5. Click **Analyze** — receive a full gap report
-
-### Learning
-1. Navigate to **Learning**
-2. Select a topic from your roadmap
-3. Work through the 8-stage lesson (Overview → Resources)
-4. Take the quiz and get instant AI feedback
-
-### Interview Practice
-1. Navigate to **Interview Practice**
-2. Choose interview type (Behavioral / Technical / etc.)
-3. Answer questions in the chat interface
-4. Receive detailed scoring and improvement tips
-
-### Progress
-1. Navigate to **Progress**
-2. View charts for quiz scores, roadmap completion, skill mastery, and interview scores
-
----
-
-## Environment Variables
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `GEMINI_API_KEY` | ✅ Yes | — | Your Google Gemini API key |
-| `GEMINI_MODEL` | No | `gemini-2.0-flash` | Model to use |
-| `GEMINI_TEMPERATURE` | No | `0.7` | Generation temperature |
-| `GEMINI_MAX_TOKENS` | No | `8192` | Max output tokens |
-| `DB_PATH` | No | `careerpilot.db` | SQLite database path |
-
----
-
-## License
-
-MIT — Free to use, modify, and distribute.
+## 🤝 License
+Licensed under the [MIT License](LICENSE).
